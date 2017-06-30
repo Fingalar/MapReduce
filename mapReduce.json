@@ -1,0 +1,30 @@
+{
+"inputs": "employees",
+"query":[
+    {"map":{
+      "language":"javascript",
+      "source":"function(riakObject, keydata, arg) {
+    	data = JSON.parse(riakObject.values[0].data)
+    	var year = data.hire_date.substring(0,4);
+		var month = data.hire_date.substring(5,7);
+		var date = data.hire_date.substring(8,10);
+    	var ageDifMs = Date.now() - new Date(year, month-1, date);
+		var ageDate = new Date(ageDifMs); // miliseconds from epoch
+		if (Math.abs(ageDate.getUTCFullYear() - 1970) > 30) {
+			data.ageDate = Math.abs(ageDate.getUTCFullYear() - 1970);
+			return [data];
+		}
+		else {
+			return [];
+		}
+      }"
+    }},
+    {"reduce":{
+    "language":"javascript",
+    "source":"function(values) {
+        var sortedValues = values.sort(function(a, b) {return b.ageDate - a.ageDate})
+        return sortedValues.map(function (elem) {return elem.first_name + ':' + elem.ageDate })
+     }"
+    }}]
+}
+
